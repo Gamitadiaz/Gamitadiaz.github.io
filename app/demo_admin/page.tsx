@@ -12,12 +12,20 @@ export default function DemoAdminPremium() {
   // PROTECCIÓN DE RUTA
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        // Si no hay sesión, mandamos al login con guion bajo
-        router.push('/demo_admin/login');
-      } else {
-        setAuthLoading(false);
+      console.log("1. Iniciando verificación en Supabase..."); 
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        console.log("2. Respuesta recibida:", { user, error });
+        
+        if (error || !user) {
+          console.log("3. No hay usuario, mandando al login...");
+          router.push('/demo_admin/login');
+        } else {
+          console.log("3. Usuario detectado:", user.email);
+          setAuthLoading(false);
+        }
+      } catch (err) {
+        console.error("Error crítico en la conexión:", err);
       }
     };
     checkUser();
