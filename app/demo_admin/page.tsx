@@ -1,75 +1,78 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase_config';
 import Link from 'next/link';
 
 export default function DemoAdminPremium() {
-  // Estado para controlar qué vista se muestra
-  const [vistaActual, setVistaActual] = useState('socios'); // 'socios' | 'reportes' | 'configuracion'
+  const router = useRouter();
+  const [authLoading, setAuthLoading] = useState(true);
+  const [vistaActual, setVistaActual] = useState('socios');
 
-  // Datos simulados
+  // PROTECCIÓN DE RUTA
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // Si no hay sesión, mandamos al login con guion bajo
+        router.push('/demo_admin/login');
+      } else {
+        setAuthLoading(false);
+      }
+    };
+    checkUser();
+  }, [router]);
+
+  // Datos simulados (Igual que los tenías)
   const [clientes] = useState([
     { id: 1, nombre: "Carlos Mendoza", plan: "Mensualidad", estado: "Activo", vencimiento: "2026-05-15" },
     { id: 2, nombre: "Lucía Fernández", plan: "Anualidad", estado: "Vencido", vencimiento: "2026-04-01" },
     { id: 3, nombre: "Roberto Gómez", plan: "Estudiante", estado: "Activo", vencimiento: "2026-04-20" },
   ]);
 
+  if (authLoading) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-gray-900 text-white font-bold">
+        Verificando acceso administrativo...
+      </div>
+    );
+  }
   return (
     <div className="flex h-screen bg-gray-50 font-sans text-gray-900 overflow-hidden">
-      
-      {/* SIDEBAR (Barra Lateral) */}
+      {/* Sidebar - Mantén el código que ya tienes de aside */}
       <aside className="w-64 bg-gray-900 text-white flex flex-col shadow-2xl z-20">
         <div className="h-16 flex items-center px-6 border-b border-gray-800">
           <svg className="w-8 h-8 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
           <span className="text-xl font-black tracking-wider uppercase">Panel<span className="text-blue-500">Pro</span></span>
         </div>
-        
         <nav className="flex-1 px-4 py-6 space-y-2">
-          {/* Botón Socios */}
-          <button 
-            onClick={() => setVistaActual('socios')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition ${vistaActual === 'socios' ? 'bg-blue-600/10 text-blue-400 border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          <button onClick={() => setVistaActual('socios')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition ${vistaActual === 'socios' ? 'bg-blue-600/10 text-blue-400 border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
             Socios / Clientes
           </button>
-
-          {/* Botón Reportes */}
-          <button 
-            onClick={() => setVistaActual('reportes')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition ${vistaActual === 'reportes' ? 'bg-blue-600/10 text-blue-400 border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          <button onClick={() => setVistaActual('reportes')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition ${vistaActual === 'reportes' ? 'bg-blue-600/10 text-blue-400 border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
             Reporte Financiero
           </button>
-
-          {/* Botón Configuración */}
-          <button 
-            onClick={() => setVistaActual('configuracion')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition ${vistaActual === 'configuracion' ? 'bg-blue-600/10 text-blue-400 border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <button onClick={() => setVistaActual('configuracion')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold transition ${vistaActual === 'configuracion' ? 'bg-blue-600/10 text-blue-400 border-l-4 border-blue-500' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`}>
             Configuración
           </button>
+          {/* Botón para cerrar sesión (Útil para probar el login) */}
+          <button onClick={async () => { await supabase.auth.signOut(); router.push('/demo_admin/login'); }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-red-400 hover:bg-red-900/20 transition mt-10">
+            Cerrar Sesión
+          </button>
         </nav>
-
         <div className="p-4 border-t border-gray-800">
           <Link href="/" className="text-sm text-gray-500 hover:text-white transition">← Volver al Portafolio</Link>
         </div>
       </aside>
 
-      {/* ÁREA PRINCIPAL */}
       <main className="flex-1 flex flex-col overflow-y-auto">
         <header className="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
-          <h2 className="text-xl font-bold text-gray-700 capitalize">
-            {vistaActual === 'socios' ? 'Gestión de Clientes' : vistaActual === 'reportes' ? 'Análisis Financiero' : 'Configuración del Sistema'}
-          </h2>
+          <h2 className="text-xl font-bold text-gray-700 capitalize">{vistaActual}</h2>
           <div className="flex items-center gap-3">
-            <span className="text-sm font-semibold text-gray-600 hidden md:block">Hola, Administrador</span>
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold border-2 border-blue-500">
-              A
-            </div>
+             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold border-2 border-blue-500">A</div>
           </div>
         </header>
+        
 
         <div className="p-8 max-w-7xl mx-auto w-full">
           

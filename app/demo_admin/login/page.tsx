@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect } from 'react'; // 👈 agrega useEffect
-import { useRouter } from 'next/navigation';  // 👈 agrega esto
-import { supabase } from '@/lib/supabase_config'; // 👈 agrega esto
-import Link from 'next/link';; // Asegúrate de que la ruta coincida con donde creaste la carpeta lib
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase_config';
 
 export default function LoginAdmin() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,18 +15,17 @@ export default function LoginAdmin() {
     setLoading(true);
     setError('');
 
-    // Función nativa de Supabase para iniciar sesión
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    if (error) {
-      setError('Credenciales incorrectas. Intenta de nuevo.');
+    if (authError) {
+      setError('Credenciales incorrectas o servidor no conectado.');
       setLoading(false);
     } else {
-      // Si el login es exitoso, lo mandamos al panel
-      window.location.href = '/demo_admin';
+      // Usamos el router de Next para una transición más suave
+      router.push('/demo_admin');
     }
   };
 
